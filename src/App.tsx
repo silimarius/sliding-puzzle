@@ -1,8 +1,14 @@
 import React from "react";
-import Board from "./components/Board";
+import { Provider } from "react-redux";
+import Game from "./components/Game";
+import store from "./store";
 
 const App = () => {
-  return <Board sideLength={3} />;
+  return (
+    <Provider store={store}>
+      <Game />;
+    </Provider>
+  );
 };
 
 export default App;

@@ -2,14 +2,15 @@ import React, { FC, useEffect, useMemo, useState } from "react";
 import { knuthShuffle } from "knuth-shuffle";
 import styles from "../styles/Board.module.css";
 import Square from "../models/Square";
+import { useDispatch, useSelector } from "react-redux";
+import { GameState, GameStatus } from "../store/types";
+import { setMoves, setGameStatus } from "../store/actions";
 
-interface BoardProps {
-  sideLength: number;
-}
-
-const Board: FC<BoardProps> = ({ sideLength }) => {
-  const [moves, setMoves] = useState(0);
+const Board: FC = () => {
+  const dispatch = useDispatch();
   const [squares, setSquares] = useState<Square[][]>([]);
+  const sideLength = useSelector((state: GameState) => state.boardSize);
+  const moves = useSelector((state: GameState) => state.moves);
   const area = useMemo(() => sideLength ** 2, [sideLength]);
 
   // squares initialization
@@ -34,7 +35,9 @@ const Board: FC<BoardProps> = ({ sideLength }) => {
   const checkWinCondition = () => {
     const values = squares.flat().map((square) => square.value);
     const isSorted = values.every((value, i, arr) => !i || arr[i - 1] <= value);
-    console.log(isSorted);
+    if (isSorted) {
+      dispatch(setGameStatus(GameStatus.won));
+    }
   };
 
   const handleSquareClick = (rowIndex: number, colIndex: number) => {
@@ -76,14 +79,14 @@ const Board: FC<BoardProps> = ({ sideLength }) => {
     ];
     const successfulAttempt = attempts.filter((attempt) => attempt.success)[0];
     if (successfulAttempt) {
-      setMoves(moves + 1);
+      dispatch(setMoves(moves + 1));
       setSquares(successfulAttempt.squares);
       checkWinCondition();
     }
   };
 
   return (
-    <div className={styles.container}>
+    <>
       <table className={styles.table}>
         <tbody>
           {squares.map((row, ri) => (
@@ -110,7 +113,7 @@ const Board: FC<BoardProps> = ({ sideLength }) => {
         </tbody>
       </table>
       <p>Moves: {moves}</p>
-    </div>
+    </>
   );
 };
 
