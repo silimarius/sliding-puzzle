@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { GameState, GameStatus } from "../store/types";
 import Board from "./Board";
@@ -9,7 +9,7 @@ import WinMessage from "./WinMessage";
 const Game = () => {
   const status = useSelector((state: GameState) => state.status);
 
-  const getPage = () => {
+  const page = useMemo(() => {
     switch (status) {
       case GameStatus.menu:
         return <Menu />;
@@ -18,9 +18,9 @@ const Game = () => {
       case GameStatus.won:
         return <WinMessage />;
     }
-  };
+  }, [status]);
 
-  return <div className={styles.container}>{getPage()}</div>;
+  return <div className={styles.container}>{page}</div>;
 };
 
 export default Game;

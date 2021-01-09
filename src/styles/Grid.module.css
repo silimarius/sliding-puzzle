@@ -1,0 +1,20 @@
+.table {
+  background-color: #ffcdd2;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.cell {
+  text-align: center;
+  padding: 0;
+  overflow: hidden;
+}
+
+.cell:hover {
+  cursor: pointer;
+}
+
+.image {
+  display: block;
+}

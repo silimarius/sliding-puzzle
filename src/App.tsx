@@ -6,7 +6,7 @@ import store from "./store";
 const App = () => {
   return (
     <Provider store={store}>
-      <Game />;
+      <Game />
     </Provider>
   );
 };

@@ -1,35 +1,41 @@
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { knuthShuffle } from "knuth-shuffle";
-import styles from "../styles/Board.module.css";
 import Square from "../models/Square";
 import { useDispatch, useSelector } from "react-redux";
 import { GameState, GameStatus } from "../store/types";
 import { setMoves, setGameStatus } from "../store/actions";
+import gameImage from "../img/flowers.jpg";
+import { splitImage } from "../utils/image";
+import Grid from "./Grid";
+import { generateMatrix, invertSquares } from "../utils/matrix";
 
 const Board: FC = () => {
   const dispatch = useDispatch();
   const [squares, setSquares] = useState<Square[][]>([]);
+  const [orderedSquares, setOrderedSquares] = useState<Square[][]>([]);
+  const [peaking, setPeaking] = useState(false);
+
   const sideLength = useSelector((state: GameState) => state.boardSize);
   const moves = useSelector((state: GameState) => state.moves);
+
   const area = useMemo(() => sideLength ** 2, [sideLength]);
 
   // squares initialization
   useEffect(() => {
-    // shuffling process
-    const values = Array(area)
-      .fill(undefined)
-      .map((_, i) => i + 1);
-    knuthShuffle(values);
-    // matrix creation
-    const emptyMatrix: Square[][] = Array(sideLength).fill(
-      Array(sideLength).fill(undefined)
-    );
-    const matrix: Square[][] = emptyMatrix.map((row, rowIndex) =>
-      row.map((_, colIndex) => ({
-        value: values[sideLength * rowIndex + colIndex],
-      }))
-    );
-    setSquares(matrix);
+    const initMatrix = async () => {
+      const images = await splitImage(gameImage, sideLength);
+      // shuffling process
+      const values = Array(area)
+        .fill(undefined)
+        .map((_, i) => i + 1);
+      const orderedMatrix = generateMatrix(sideLength, values, images);
+      knuthShuffle(values);
+      const matrix = generateMatrix(sideLength, values, images);
+      // matrix creation
+      setOrderedSquares(orderedMatrix);
+      setSquares(matrix);
+    };
+    initMatrix();
   }, [sideLength, area]);
 
   const checkWinCondition = () => {
@@ -41,78 +47,39 @@ const Board: FC = () => {
   };
 
   const handleSquareClick = (rowIndex: number, colIndex: number) => {
-    const invertSquares = (
-      rowSwitch: number,
-      colSwitch: number
-    ): { squares: Square[][]; success: boolean } => {
-      const tmpSquares = [...squares];
-
-      const firstRow = squares[rowIndex];
-      const secondRow = squares[rowSwitch];
-
-      if (!firstRow || !secondRow) {
-        return { squares: tmpSquares, success: false };
-      }
-
-      const first = firstRow[colIndex];
-      const second = secondRow[colSwitch];
-
-      if (
-        first &&
-        second &&
-        first.value !== second.value &&
-        second.value === area
-      ) {
-        const pivot = { ...first };
-        squares[rowIndex][colIndex] = { ...second };
-        squares[rowSwitch][colSwitch] = pivot;
-        return { squares: tmpSquares, success: true };
-      }
-      return { squares: tmpSquares, success: false };
-    };
-
+    const matrixState = { matrix: squares, rowIndex, colIndex };
     const attempts = [
-      invertSquares(rowIndex - 1, colIndex),
-      invertSquares(rowIndex + 1, colIndex),
-      invertSquares(rowIndex, colIndex + 1),
-      invertSquares(rowIndex, colIndex - 1),
+      invertSquares(rowIndex - 1, colIndex, matrixState),
+      invertSquares(rowIndex + 1, colIndex, matrixState),
+      invertSquares(rowIndex, colIndex + 1, matrixState),
+      invertSquares(rowIndex, colIndex - 1, matrixState),
     ];
     const successfulAttempt = attempts.filter((attempt) => attempt.success)[0];
     if (successfulAttempt) {
       dispatch(setMoves(moves + 1));
-      setSquares(successfulAttempt.squares);
+      setSquares(successfulAttempt.matrix);
       checkWinCondition();
     }
   };
 
   return (
     <>
-      <table className={styles.table}>
-        <tbody>
-          {squares.map((row, ri) => (
-            <tr key={"row" + ri}>
-              {row.map((square, si) => (
-                <td
-                  className={styles.cell}
-                  style={{
-                    backgroundColor:
-                      square.value === area
-                        ? "#80cbc4"
-                        : square.value % 2 === 1
-                        ? "white"
-                        : "#ff8a65",
-                  }}
-                  key={"col" + si}
-                  onClick={() => handleSquareClick(ri, si)}
-                >
-                  {square.value === area ? "" : square.value}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <p>Moves: {moves}</p>
+      {squares.length === 0 ? (
+        <p>Loading...</p>
+      ) : (
+        <>
+          <button onClick={() => setPeaking(!peaking)}>
+            {!peaking ? "Peak Result" : "Stop Peaking"}
+          </button>
+          <br />
+          {peaking ? (
+            <Grid squares={orderedSquares} />
+          ) : (
+            <Grid squares={squares} onSquareClick={handleSquareClick} />
+          )}
+          <p>Moves: {moves}</p>
+        </>
+      )}
     </>
   );
 };

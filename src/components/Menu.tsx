@@ -9,7 +9,7 @@ const Menu = () => {
   const boardSize = useSelector((state: GameState) => state.boardSize);
 
   const updateBoardSize = (increment: boolean) => {
-    if (increment && boardSize < 7) {
+    if (increment && boardSize < 6) {
       dispatch(setBoardSize(boardSize + 1));
     }
     if (!increment && boardSize > 3) {
