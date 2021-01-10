@@ -32,7 +32,7 @@ const Grid: FC<Props> = ({ squares, onSquareClick }) => {
                   }
                 }}
               >
-                {square.value !== squares.flat().length && (
+                {!square.isEmpty && (
                   <img
                     className={styles.image}
                     width="100%"

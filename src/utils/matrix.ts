@@ -5,6 +5,7 @@ export const generateMatrix = (
   values: number[],
   images: string[]
 ): Square[][] => {
+  const area = sideLength ** 2;
   const emptyMatrix: Square[][] = Array(sideLength).fill(
     Array(sideLength).fill(undefined)
   );
@@ -14,6 +15,7 @@ export const generateMatrix = (
       return {
         value,
         imageSource: images[value - 1],
+        isEmpty: area === value,
       };
     })
   );
@@ -42,12 +44,7 @@ export const invertSquares = (
   const first = firstRow[colIndex];
   const second = secondRow[colSwitch];
 
-  if (
-    first &&
-    second &&
-    first.value !== second.value &&
-    second.value === matrix.flat().length
-  ) {
+  if (first && second && first.value !== second.value && second.isEmpty) {
     const pivot = { ...first };
     matrix[rowIndex][colIndex] = { ...second };
     matrix[rowSwitch][colSwitch] = pivot;
