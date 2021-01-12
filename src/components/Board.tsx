@@ -13,7 +13,7 @@ const Board: FC = () => {
   const dispatch = useDispatch();
   const [squares, setSquares] = useState<Square[][]>([]);
   const [orderedSquares, setOrderedSquares] = useState<Square[][]>([]);
-  const [peaking, setPeaking] = useState(false);
+  const [peeking, setPeeking] = useState(false);
 
   const sideLength = useSelector((state: GameState) => state.boardSize);
   const moves = useSelector((state: GameState) => state.moves);
@@ -68,11 +68,11 @@ const Board: FC = () => {
         <p>Loading...</p>
       ) : (
         <>
-          <button onClick={() => setPeaking(!peaking)}>
-            {!peaking ? "Peak Result" : "Stop Peaking"}
+          <button onClick={() => setPeeking(!peeking)}>
+            {!peeking ? "Peek Result" : "Stop Peeking"}
           </button>
           <br />
-          {peaking ? (
+          {peeking ? (
             <Grid squares={orderedSquares} />
           ) : (
             <Grid squares={squares} onSquareClick={handleSquareClick} />
